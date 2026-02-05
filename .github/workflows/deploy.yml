@@ -20,9 +20,12 @@ jobs:
       - name: Build Project
         run: |
           npm run build
-          # البحث عن مجلد البناء ونقله للمسار الصحيح لـ Capacitor
-          if [ -d "client/dist" ]; then cp -r client/dist/. dist/; fi
-          if [ ! -f "dist/index.html" ]; then find . -name index.html -path "*/dist/*" -exec cp -r $(dirname {})/. dist/ \;; fi
+          # خلق مجلد dist لو مش موجود
+          mkdir -p dist
+          # البحث عن ملف index.html في أي مكان ونقل محتويات المجلد اللي هو فيه لـ dist
+          find . -name index.html ! -path "./dist/*" ! -path "./node_modules/*" | head -n 1 | xargs -I {} dirname {} | xargs -I % cp -r %/. dist/
+          # التأكد من وجود الملف الآن
+          ls -F dist/
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -30,18 +33,20 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Install Capacitor
+      - name: Install & Sync Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          if [ ! -f "capacitor.config.ts" ] && [ ! -f "capacitor.config.json" ]; then
-            npx cap init "Nucleus Ultra" "com.nucleus.ultra" --web-dir dist
-          fi
-          npx cap add android || true
+          # حذف أي أثر قديم للأندرويد لضمان بناء نظيف
+          rm -rf android
+          npx cap init "Nucleus Ultra" "com.nucleus.ultra" --web-dir dist
+          npx cap add android
+          npx cap sync android
 
       - name: Build APK
         run: |
-          npx cap copy android
-          cd android && ./gradlew assembleDebug
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
