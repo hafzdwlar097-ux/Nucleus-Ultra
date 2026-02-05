@@ -1,38 +1,52 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { materials, type CreateMaterialRequest, type MaterialResponse } from "@shared/schema";
+import { desc, ilike } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  listMaterials(input?: { search?: string; limit?: number }): Promise<MaterialResponse[]>;
+  listRecentMaterials(input?: { limit?: number }): Promise<MaterialResponse[]>;
+  createMaterial(input: CreateMaterialRequest): Promise<MaterialResponse>;
+  getMaterialById(id: number): Promise<MaterialResponse | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+export class DatabaseStorage implements IStorage {
+  async listMaterials(input?: { search?: string; limit?: number }): Promise<MaterialResponse[]> {
+    const limit = input?.limit ?? 100;
 
-  constructor() {
-    this.users = new Map();
+    if (input?.search && input.search.trim().length > 0) {
+      return await db
+        .select()
+        .from(materials)
+        .where(ilike(materials.name, `%${input.search.trim()}%`))
+        .orderBy(desc(materials.createdAt))
+        .limit(limit);
+    }
+
+    return await db
+      .select()
+      .from(materials)
+      .orderBy(desc(materials.createdAt))
+      .limit(limit);
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async listRecentMaterials(input?: { limit?: number }): Promise<MaterialResponse[]> {
+    const limit = input?.limit ?? 20;
+    return await db
+      .select()
+      .from(materials)
+      .orderBy(desc(materials.createdAt))
+      .limit(limit);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createMaterial(input: CreateMaterialRequest): Promise<MaterialResponse> {
+    const [created] = await db.insert(materials).values(input).returning();
+    return created;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async getMaterialById(id: number): Promise<MaterialResponse | undefined> {
+    const [found] = await db.select().from(materials).where((m, { eq }) => eq(m.id, id)).limit(1);
+    return found;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
