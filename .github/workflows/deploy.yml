@@ -20,23 +20,18 @@ jobs:
       - name: Build Project
         run: |
           npm run build
-          # خلق مجلد dist لو مش موجود
           mkdir -p dist
-          # البحث عن ملف index.html في أي مكان ونقل محتويات المجلد اللي هو فيه لـ dist
           find . -name index.html ! -path "./dist/*" ! -path "./node_modules/*" | head -n 1 | xargs -I {} dirname {} | xargs -I % cp -r %/. dist/
-          # التأكد من وجود الملف الآن
-          ls -F dist/
 
-      - name: Setup Java
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21' # تم التحديث هنا لحل مشكلة invalid source release
 
       - name: Install & Sync Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          # حذف أي أثر قديم للأندرويد لضمان بناء نظيف
           rm -rf android
           npx cap init "Nucleus Ultra" "com.nucleus.ultra" --web-dir dist
           npx cap add android
