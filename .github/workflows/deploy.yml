@@ -1,4 +1,4 @@
-name: Build App Files
+name: Build Full Stack App
 on:
   push:
     branches: [ main ]
@@ -13,18 +13,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Project
+      - name: Build Full Project
         run: npm run build
 
-      - name: Zip Production Files
-        run: zip -r Nucleus-Ultra-Files.zip dist/
+      - name: Prepare Production Package
+        run: |
+          mkdir -p release
+          cp -r dist release/dist || true
+          cp -r server release/server || true
+          cp -r shared release/shared || true
+          cp package.json package-lock.json release/
+          [ -d "drizzle" ] && cp -r drizzle release/drizzle || true
 
-      - name: Upload Build Files
+      - name: Zip All Files
+        run: zip -r Eco-Structure-Hub-Full.zip release/
+
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Nucleus-Ultra-Package
-          path: Nucleus-Ultra-Files.zip
+          name: Full-App-Package
+          path: Eco-Structure-Hub-Full.zip
