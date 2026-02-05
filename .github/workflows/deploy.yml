@@ -1,25 +1,30 @@
-name: Deploy Nucleus Ultra
+name: Build App Files
 on:
   push:
     branches: [ main ]
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
+      - name: Install Dependencies
+        run: npm install
 
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Build Project
+        run: npm run build
+
+      - name: Zip Production Files
+        run: zip -r Nucleus-Ultra-Files.zip dist/
+
+      - name: Upload Build Files
+        uses: actions/upload-artifact@v4
         with:
-          path: dist
+          name: Nucleus-Ultra-Package
+          path: Nucleus-Ultra-Files.zip
