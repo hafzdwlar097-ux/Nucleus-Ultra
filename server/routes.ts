@@ -8,20 +8,20 @@ function nucleusHints(ratio: number): string[] {
   const hints: string[] = [];
 
   if (ratio < 0.6) {
-    hints.push("Add X-ribs across the span");
-    hints.push("Increase fillet radii at corners to reduce stress concentration");
-    hints.push("Add a closed-section rib or box-beam feature where possible");
-    hints.push("Reduce unsupported length (add standoffs or intermediate supports)");
+    hints.push("Add X-ribs across the span | أضف أعصاب تدعيم (X-ribs) على طول الامتداد");
+    hints.push("Increase fillet radii at corners to reduce stress concentration | زد أنصاف أقطار التقويس عند الزوايا لتقليل تركيز الإجهاد");
+    hints.push("Add a closed-section rib or box-beam feature where possible | أضف عصب مقطع مغلق أو ميزة عارضة صندوقية حيثما أمكن");
+    hints.push("Reduce unsupported length (add standoffs or intermediate supports) | قلل الطول غير المدعوم (أضف ركائز أو دعامات وسيطة)");
   } else if (ratio < 0.85) {
-    hints.push("Add 2-3 longitudinal ribs");
-    hints.push("Thicken around fasteners and load paths");
-    hints.push("Add gussets at joints");
+    hints.push("Add 2-3 longitudinal ribs | أضف 2-3 أعصاب طولية");
+    hints.push("Thicken around fasteners and load paths | زد السمك حول المثبتات ومسارات التحميل");
+    hints.push("Add gussets at joints | أضف وصلات تقوية عند المفاصل");
   } else if (ratio < 1.0) {
-    hints.push("Add light ribbing near high-stress areas");
-    hints.push("Keep consistent wall thickness and avoid sharp internal corners");
+    hints.push("Add light ribbing near high-stress areas | أضف تعصيباً خفيفاً بالقرب من مناطق الإجهاد العالي");
+    hints.push("Keep consistent wall thickness and avoid sharp internal corners | حافظ على سمك جدار ثابت وتجنب الزوايا الداخلية الحادة");
   } else {
-    hints.push("Maintain uniform thickness to avoid warping");
-    hints.push("Consider weight-reduction pockets while keeping rib support");
+    hints.push("Maintain uniform thickness to avoid warping | حافظ على سمك منتظم لتجنب الالتواء");
+    hints.push("Consider weight-reduction pockets while keeping rib support | فكر في جيوب لتقليل الوزن مع الحفاظ على دعم الأعصاب");
   }
 
   return hints;
